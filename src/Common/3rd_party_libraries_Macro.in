@@ -67,8 +67,8 @@
 #cmakedefine LOGGING @LOGGING@
 
 // the configured options and settings for Tutorial
-#define 3rd_party_libraries_VERSION_MAJOR @3rd_party_libraries_VERSION_MAJOR@
-#define 3rd_party_libraries_VERSION_MINOR @3rd_party_libraries_VERSION_MINOR@
+#define third_party_libraries_VERSION_MAJOR @third_party_libraries_VERSION_MAJOR@
+#define third_party_libraries_VERSION_MINOR @third_party_libraries_VERSION_MINOR@
 
 /// @name Code Simplifications
 ///@{
