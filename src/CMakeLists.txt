@@ -1,6 +1,7 @@
 # INCLUDE SUB DIRECTORIES
 add_subdirectory(Common)
 add_subdirectory(VoroInterface)
+add_subdirectory(TetgenInterface)
 add_subdirectory(VtkInterface)
 
 list(APPEND 3rd_party_libraries_src_includes ${CMAKE_CURRENT_SOURCE_DIR})
