@@ -1,6 +1,7 @@
 # INCLUDE SUB DIRECTORIES
 add_subdirectory(Common)
 add_subdirectory(VoroInterface)
+add_subdirectory(TriangleInterface)
 add_subdirectory(TetgenInterface)
 add_subdirectory(VtkInterface)
 
