@@ -125,6 +125,7 @@ if(${ENABLE_SUITESPARSE})
     list(APPEND 3rd_party_libraries_LIBRARY_INCLUDE ${SUITESPARSE_INCLUDE_DIRS})
 endif()
 
+## PETSC
 if(${ENABLE_PETSC})
     # PkgConfig
     find_package(PkgConfig)
