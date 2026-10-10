@@ -9,4 +9,4 @@ endif()
 
 check_required_components("@PROJECT_NAME@")
 
-message(STATUS "Found 3rd_party_libraries version: ${3rd_party_libraries_VERSION}")
+message(STATUS "Found 3rd_party_libraries version: ${third_party_libraries_VERSION}")

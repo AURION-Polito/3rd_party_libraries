@@ -7,6 +7,7 @@ add_subdirectory(VtkInterface)
 add_subdirectory(MetisInterface)
 add_subdirectory(PETScInterface)
 add_subdirectory(SuiteSparseInterface)
+add_subdirectory(MKLInterface)
 
 list(APPEND 3rd_party_libraries_src_includes ${CMAKE_CURRENT_SOURCE_DIR})
 

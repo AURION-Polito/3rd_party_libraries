@@ -30,8 +30,8 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 Message(STATUS "3rd_party_libraries Library will be installed in: " ${CMAKE_INSTALL_PREFIX})
 
-set(PYBIND OFF CACHE BOOL "Adapt code for PYBIND support")
-set(USE_MPI OFF CACHE BOOL "Enable MPI support")
+# External libraries
+###########################################################################################
 set(ENABLE_TRIANGLE OFF CACHE BOOL "Enable Triangle extension")
 set(ENABLE_TETGEN OFF CACHE BOOL "Enable Tetgen extension")
 set(ENABLE_METIS OFF CACHE BOOL "Enable Metis extension")
@@ -40,16 +40,6 @@ set(ENABLE_MKL OFF CACHE BOOL "Enable MKL extension")
 set(ENABLE_VORO OFF CACHE BOOL "Enable VORO extension")
 set(ENABLE_SUITESPARSE OFF CACHE BOOL "Enable SuiteSparse extension")
 set(ENABLE_PETSC OFF CACHE BOOL "Enable PETSc extension: use MPI to active it")
-set(VERBOSE 3 CACHE STRING "Select verbosity level (0, 1, 2 3 or 4)")
-set_property(CACHE VERBOSE PROPERTY STRINGS 0 1 2 3 4)
-if(NOT ${VERBOSE} MATCHES 0 AND NOT ${VERBOSE} MATCHES 1 AND NOT ${VERBOSE} MATCHES 2 AND NOT ${VERBOSE} MATCHES 3 AND NOT ${VERBOSE} MATCHES 4)
-    message(SEND_ERROR "VERBOSE variable must be either 0 (None), 1 (Error), 2 (Warning), 3 (Info) or 4 (Debug)")
-endif()
-set(LOGGING 3 CACHE STRING "Select logging level (0, 1, 2 or 3)")
-set_property(CACHE LOGGING PROPERTY STRINGS 0 1 2 3)
-if(NOT ${LOGGING} MATCHES 0 AND NOT ${LOGGING} MATCHES 1 AND NOT ${LOGGING} MATCHES 2 AND NOT ${LOGGING} MATCHES 3)
-    message(SEND_ERROR "LOGGING variable must be either 0 (None), 1 (Console), 2 (LogFile) or 3 (Console and LogFile)")
-endif()
 
 # Add dependencies
 ###########################################################################################
@@ -71,9 +61,6 @@ else()
         list(APPEND 3rd_party_libraries_LIBRARY_INCLUDE ${GEDIM_LIBRARY_INCLUDE_DIRECTORIES})
         list(APPEND 3rd_party_libraries_LIBRARY_LINKED_LIBRARIES PRIVATE GeDiM::GeDiM)
 endif()
-
-
-message("lib ${3rd_party_libraries_LIBRARY_HEADERS}")
 
 ## Eigen3
 find_package(Eigen3 CONFIG REQUIRED)
