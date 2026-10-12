@@ -12,7 +12,7 @@
 #ifndef __VTPExtension_H
 #define __VTPExtension_H
 
-#include "Gedim_Macro.hpp"
+#include "3rd_party_libraries_Macro.hpp"
 
 #include <map>
 #include <vector>
