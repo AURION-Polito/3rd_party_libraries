@@ -59,7 +59,6 @@ else()
         list(APPEND 3rd_party_libraries_LIBRARY_LINKED_LIBRARIES PRIVATE ${GEDIM_LIBRARY_NAME} ${GEDIM_LIBRARY_LINKED_LIBRARIES})
         list(APPEND 3rd_party_libraries_LIBRARY_HEADERS ${GEDIM_LIBRARY_HEADERS})
         list(APPEND 3rd_party_libraries_LIBRARY_INCLUDE ${GEDIM_LIBRARY_INCLUDE_DIRECTORIES})
-        list(APPEND 3rd_party_libraries_LIBRARY_LINKED_LIBRARIES PRIVATE GeDiM::GeDiM)
 endif()
 
 ## Eigen3
