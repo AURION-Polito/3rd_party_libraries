@@ -13,6 +13,8 @@
 #include "GraphUtilities.hpp"
 #include "IMeshDAO.hpp"
 
+// #define EXPORT_TEST_VTU
+
 using namespace std;
 using namespace Eigen;
 
@@ -122,8 +124,10 @@ AgglomerateMeshByFunctionResult AgglomerateMeshByFunction(const Gedim::GeometryU
 
 void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                          const std::vector<Gedim::GeometryUtilities::Polyhedron> &domains,
-                         Gedim::MeshMatrices &mesh_data,
+                         Gedim::MeshMatrices &full_mesh_data,
+                         Gedim::IMeshDAO &full_mesh,
                          IMeshDAO &mesh);
+
 } // namespace MeshUtilities
 } // namespace External
 } // namespace Gedim

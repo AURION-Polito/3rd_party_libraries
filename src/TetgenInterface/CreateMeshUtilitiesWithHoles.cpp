@@ -17,8 +17,6 @@
 #include "MeshUtilities.hpp"
 #include "TetgenInterface.hpp"
 
-#define EXPORT_TEST_VTU
-
 #ifdef EXPORT_TEST_VTU
 #include "VTKUtilities.hpp"
 #include "VtkMeshExporter.hpp"
@@ -1851,21 +1849,21 @@ AgglomerateMeshByFunctionResult AgglomerateMeshByFunction(const Gedim::GeometryU
 // ***************************************************************************
 void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                          const std::vector<Gedim::GeometryUtilities::Polyhedron> &domains,
-                         Gedim::MeshMatrices &mesh_data,
+                         Gedim::MeshMatrices &full_mesh_data,
+                         Gedim::IMeshDAO &full_mesh,
                          Gedim::IMeshDAO &mesh)
 {
-    Gedim::MeshUtilities meshUtilities;
     Gedim::GraphUtilities graphUtilities;
 
-    std::vector<Eigen::MatrixXd> cell2Ds_vertices(mesh.Cell2DTotalNumber());
-    std::vector<Eigen::MatrixXd> cell2Ds_2D_vertices(mesh.Cell2DTotalNumber());
-    std::vector<Eigen::Vector3d> cell2Ds_normal(mesh.Cell2DTotalNumber());
-    std::vector<Eigen::Vector3d> cell2Ds_translation(mesh.Cell2DTotalNumber());
-    std::vector<Eigen::Matrix3d> cell2Ds_rotation_matrix(mesh.Cell2DTotalNumber());
-    std::vector<Eigen::MatrixXd> cell2Ds_bounding_box(mesh.Cell2DTotalNumber());
-    for (unsigned int p = 0; p < mesh.Cell2DTotalNumber(); p++)
+    std::vector<Eigen::MatrixXd> cell2Ds_vertices(full_mesh.Cell2DTotalNumber());
+    std::vector<Eigen::MatrixXd> cell2Ds_2D_vertices(full_mesh.Cell2DTotalNumber());
+    std::vector<Eigen::Vector3d> cell2Ds_normal(full_mesh.Cell2DTotalNumber());
+    std::vector<Eigen::Vector3d> cell2Ds_translation(full_mesh.Cell2DTotalNumber());
+    std::vector<Eigen::Matrix3d> cell2Ds_rotation_matrix(full_mesh.Cell2DTotalNumber());
+    std::vector<Eigen::MatrixXd> cell2Ds_bounding_box(full_mesh.Cell2DTotalNumber());
+    for (unsigned int p = 0; p < full_mesh.Cell2DTotalNumber(); p++)
     {
-        cell2Ds_vertices[p] = mesh.Cell2DVerticesCoordinates(p);
+        cell2Ds_vertices[p] = full_mesh.Cell2DVerticesCoordinates(p);
         cell2Ds_normal[p] = geometry_utilities.PolygonNormal(cell2Ds_vertices[p]);
         cell2Ds_bounding_box[p] = geometry_utilities.PointsBoundingBox(cell2Ds_vertices[p]);
         cell2Ds_translation[p] = geometry_utilities.PolygonTranslation(cell2Ds_vertices[p]);
@@ -1876,8 +1874,11 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                                                                            cell2Ds_translation[p]);
     }
 
-    const auto cell1Ds_geometric_data = meshUtilities.FillMesh1DGeometricData(geometry_utilities, mesh);
-    const auto cell3Ds_geometric_data = meshUtilities.FillMesh3DGeometricData(geometry_utilities, mesh);
+    Gedim::MeshUtilities::ComputeCell2DCell3DNeighbours(full_mesh);
+
+    const auto cell1Ds_geometric_data = Gedim::MeshUtilities::FillMesh1DGeometricData(geometry_utilities, full_mesh);
+
+    const auto cell3Ds_geometric_data = Gedim::MeshUtilities::FillMesh3DGeometricData(geometry_utilities, full_mesh);
 
     struct polyhedron_geometric_data final
     {
@@ -1905,8 +1906,8 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
         polyhedrons[pol].Faces = domains[pol + 1].Faces;
     }
 
-    std::vector<std::list<Eigen::Vector3d>> cell3Ds_intersections_list(mesh.Cell3DTotalNumber());
-    std::vector<polyhedron_geometric_data> polyhedrons_geometric_data(num_holes);
+    std::vector<std::list<Eigen::Vector3d>> cell3Ds_intersections_list(full_mesh.Cell3DTotalNumber());
+    std::vector<polyhedron_geometric_data> polyhedrons_geometric_data(domains.size() - 1);
 
     for (unsigned int pol = 0; pol < num_holes; ++pol)
     {
@@ -1960,51 +1961,51 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
         polyhedron_geometric_data.Bounding_box = geometry_utilities.PointsBoundingBox(polyhedron.Vertices);
 
         const auto intersections_mesh_polyedron =
-            meshUtilities.Intersect_mesh_polyhedron(geometry_utilities,
-                                                    polyhedron.Vertices,
-                                                    polyhedron.Edges,
-                                                    polyhedron_geometric_data.Edges_vertices,
-                                                    polyhedron_geometric_data.Edges_tangent,
-                                                    polyhedron_geometric_data.Edges_bounding_box,
-                                                    polyhedron.Faces,
-                                                    polyhedron_geometric_data.Faces_vertices,
-                                                    polyhedron_geometric_data.Faces_rotated_vertices,
-                                                    polyhedron_geometric_data.Faces_normal,
-                                                    polyhedron_geometric_data.Faces_normal_direction,
-                                                    polyhedron_geometric_data.Faces_translation,
-                                                    polyhedron_geometric_data.Faces_rotation_matrix,
-                                                    polyhedron_geometric_data.Faces_bounding_box,
-                                                    polyhedron_geometric_data.Bounding_box,
-                                                    mesh,
-                                                    cell1Ds_geometric_data.Cell1DsBoundingBox,
-                                                    cell1Ds_geometric_data.Cell1DsVertices,
-                                                    cell1Ds_geometric_data.Cell1DsTangents,
-                                                    cell2Ds_vertices,
-                                                    cell2Ds_normal,
-                                                    cell2Ds_2D_vertices,
-                                                    cell2Ds_translation,
-                                                    cell2Ds_rotation_matrix,
-                                                    cell2Ds_bounding_box,
-                                                    cell3Ds_geometric_data.Cell3DsBoundingBox,
-                                                    cell3Ds_geometric_data.Cell3DsFaces,
-                                                    cell3Ds_geometric_data.Cell3DsFaces3DVertices,
-                                                    cell3Ds_geometric_data.Cell3DsFaces2DVertices,
-                                                    cell3Ds_geometric_data.Cell3DsFacesNormals,
-                                                    cell3Ds_geometric_data.Cell3DsFacesNormalDirections,
-                                                    cell3Ds_geometric_data.Cell3DsFacesTranslations,
-                                                    cell3Ds_geometric_data.Cell3DsFacesRotationMatrices);
+            Gedim::MeshUtilities::Intersect_mesh_polyhedron(geometry_utilities,
+                                                            polyhedron.Vertices,
+                                                            polyhedron.Edges,
+                                                            polyhedron_geometric_data.Edges_vertices,
+                                                            polyhedron_geometric_data.Edges_tangent,
+                                                            polyhedron_geometric_data.Edges_bounding_box,
+                                                            polyhedron.Faces,
+                                                            polyhedron_geometric_data.Faces_vertices,
+                                                            polyhedron_geometric_data.Faces_rotated_vertices,
+                                                            polyhedron_geometric_data.Faces_normal,
+                                                            polyhedron_geometric_data.Faces_normal_direction,
+                                                            polyhedron_geometric_data.Faces_translation,
+                                                            polyhedron_geometric_data.Faces_rotation_matrix,
+                                                            polyhedron_geometric_data.Faces_bounding_box,
+                                                            polyhedron_geometric_data.Bounding_box,
+                                                            full_mesh,
+                                                            cell1Ds_geometric_data.Cell1DsBoundingBox,
+                                                            cell1Ds_geometric_data.Cell1DsVertices,
+                                                            cell1Ds_geometric_data.Cell1DsTangents,
+                                                            cell2Ds_vertices,
+                                                            cell2Ds_normal,
+                                                            cell2Ds_2D_vertices,
+                                                            cell2Ds_translation,
+                                                            cell2Ds_rotation_matrix,
+                                                            cell2Ds_bounding_box,
+                                                            cell3Ds_geometric_data.Cell3DsBoundingBox,
+                                                            cell3Ds_geometric_data.Cell3DsFaces,
+                                                            cell3Ds_geometric_data.Cell3DsFaces3DVertices,
+                                                            cell3Ds_geometric_data.Cell3DsFaces2DVertices,
+                                                            cell3Ds_geometric_data.Cell3DsFacesNormals,
+                                                            cell3Ds_geometric_data.Cell3DsFacesNormalDirections,
+                                                            cell3Ds_geometric_data.Cell3DsFacesTranslations,
+                                                            cell3Ds_geometric_data.Cell3DsFacesRotationMatrices);
 
-        for (unsigned int c = 0; c < mesh.Cell3DTotalNumber(); ++c)
+        for (unsigned int c = 0; c < full_mesh.Cell3DTotalNumber(); ++c)
         {
-            if (!mesh.Cell3DIsActive(c))
+            if (!full_mesh.Cell3DIsActive(c))
                 continue;
 
             std::set<unsigned int> cell3D_intersections_index;
             auto &cell3D_intersections_list = cell3Ds_intersections_list.at(c);
 
-            for (unsigned int e = 0; e < mesh.Cell3DNumberEdges(c); ++e)
+            for (unsigned int e = 0; e < full_mesh.Cell3DNumberEdges(c); ++e)
             {
-                const unsigned int cell1D_index = mesh.Cell3DEdge(c, e);
+                const unsigned int cell1D_index = full_mesh.Cell3DEdge(c, e);
 
                 const auto cell1D_intersections =
                     intersections_mesh_polyedron.Mesh_intersections.Cell1Ds_intersections.find(cell1D_index);
@@ -2029,9 +2030,9 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                 }
             }
 
-            for (unsigned int f = 0; f < mesh.Cell3DNumberFaces(c); ++f)
+            for (unsigned int f = 0; f < full_mesh.Cell3DNumberFaces(c); ++f)
             {
-                const unsigned int cell2D_index = mesh.Cell3DFace(c, f);
+                const unsigned int cell2D_index = full_mesh.Cell3DFace(c, f);
 
                 const auto cell2D_intersections =
                     intersections_mesh_polyedron.Mesh_intersections.Cell2Ds_intersections.find(cell2D_index);
@@ -2079,10 +2080,10 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
         }
     }
 
-    std::vector<Eigen::MatrixXd> cell3Ds_constrained_points(mesh.Cell3DTotalNumber());
-    for (unsigned int c = 0; c < mesh.Cell3DTotalNumber(); ++c)
+    std::vector<Eigen::MatrixXd> cell3Ds_constrained_points(full_mesh.Cell3DTotalNumber());
+    for (unsigned int c = 0; c < full_mesh.Cell3DTotalNumber(); ++c)
     {
-        if (!mesh.Cell3DIsActive(c))
+        if (!full_mesh.Cell3DIsActive(c))
             continue;
 
         cell3Ds_constrained_points[c] = Gedim::Eigen_Utilities::CoordinatesToMatrix(cell3Ds_intersections_list.at(c));
@@ -2140,7 +2141,7 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
     };
 
     const auto agglomeration_info =
-        AgglomerateMeshByFunction(geometry_utilities, graphUtilities, mesh_data, empty_function, 0.0, cell3Ds_constrained_points);
+        AgglomerateMeshByFunction(geometry_utilities, graphUtilities, full_mesh_data, empty_function, 0.0, cell3Ds_constrained_points);
 
     Gedim::MeshUtilities::CheckMesh3DConfiguration checkMeshDataConfig;
     checkMeshDataConfig.Cell2D_CheckConvexity = false;
@@ -2148,22 +2149,22 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
     checkMeshDataConfig.Cell2D_CheckMeasure = false;
     checkMeshDataConfig.Cell3D_CheckMeasure = false;
 
-    meshUtilities.ComputeCell2DCell3DNeighbours(mesh);
+    Gedim::MeshUtilities::ComputeCell2DCell3DNeighbours(full_mesh);
 
-    const auto mesh_geometric_data = meshUtilities.FillMesh3DGeometricData(geometry_utilities,
-                                                                           mesh,
-                                                                           agglomeration_info.Cell3Ds_tetra_vertices,
-                                                                           agglomeration_info.Cell2Ds_triangles_vertices);
+    const auto mesh_geometric_data = Gedim::MeshUtilities::FillMesh3DGeometricData(geometry_utilities,
+                                                                                   full_mesh,
+                                                                                   agglomeration_info.Cell3Ds_tetra_vertices,
+                                                                                   agglomeration_info.Cell2Ds_triangles_vertices);
 
-    meshUtilities.ComputeCell2DCell3DNeighbours(mesh);
-    meshUtilities.ComputeCell1DCell3DNeighbours(mesh);
-    meshUtilities.ComputeCell0DCell3DNeighbours(mesh);
+    Gedim::MeshUtilities::ComputeCell2DCell3DNeighbours(full_mesh);
+    Gedim::MeshUtilities::ComputeCell1DCell3DNeighbours(full_mesh);
+    Gedim::MeshUtilities::ComputeCell0DCell3DNeighbours(full_mesh);
 
-    const unsigned int numCell3D = mesh.Cell3DTotalNumber();
+    const unsigned int numCell3D = full_mesh.Cell3DTotalNumber();
 
     for (unsigned int c = 0; c < numCell3D; c++)
         if (agglomeration_info.Cell3Ds_mark[c] == 1)
-            mesh.Cell3DSetState(c, false);
+            full_mesh.Cell3DSetState(c, false);
 
     const unsigned int markerObstacles = domains[0].Vertices.cols() + domains[0].Edges.cols() + domains[0].Faces.size() + 1;
 
@@ -2171,15 +2172,15 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
     {
         if (agglomeration_info.Cell3Ds_mark[c] == 1)
         {
-            const std::vector<unsigned int> faces = mesh.Cell3DFaces(c);
+            const std::vector<unsigned int> faces = full_mesh.Cell3DFaces(c);
 
             for (unsigned int f : faces)
             {
-                if (!mesh.Cell2DIsActive(f))
+                if (!full_mesh.Cell2DIsActive(f))
                     continue;
 
                 unsigned int count = 0;
-                const std::vector<unsigned int> neighbours = mesh.Cell2DNeighbourCell3Ds(f);
+                const std::vector<unsigned int> neighbours = full_mesh.Cell2DNeighbourCell3Ds(f);
 
                 for (unsigned int n : neighbours)
                     if (agglomeration_info.Cell3Ds_mark[n] == 1)
@@ -2188,9 +2189,9 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                     }
 
                 if (count == neighbours.size())
-                    mesh.Cell2DSetState(f, false);
+                    full_mesh.Cell2DSetState(f, false);
                 else if (count == 1)
-                    mesh.Cell2DSetMarker(f, markerObstacles);
+                    full_mesh.Cell2DSetMarker(f, markerObstacles);
                 else
                     throw std::runtime_error("Not valid configuration");
             }
@@ -2201,15 +2202,15 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
     {
         if (agglomeration_info.Cell3Ds_mark[c] == 1)
         {
-            const std::vector<unsigned int> edges = mesh.Cell3DEdges(c);
+            const std::vector<unsigned int> edges = full_mesh.Cell3DEdges(c);
 
             for (unsigned int e : edges)
             {
-                if (!mesh.Cell1DIsActive(e))
+                if (!full_mesh.Cell1DIsActive(e))
                     continue;
 
                 unsigned int count = 0;
-                const std::vector<unsigned int> neighbours = mesh.Cell1DNeighbourCell3Ds(e);
+                const std::vector<unsigned int> neighbours = full_mesh.Cell1DNeighbourCell3Ds(e);
 
                 for (unsigned int n : neighbours)
                     if (agglomeration_info.Cell3Ds_mark[n] == 1)
@@ -2218,9 +2219,9 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                     }
 
                 if (count == neighbours.size())
-                    mesh.Cell1DSetState(e, false);
+                    full_mesh.Cell1DSetState(e, false);
                 else
-                    mesh.Cell1DSetMarker(e, markerObstacles + 1);
+                    full_mesh.Cell1DSetMarker(e, markerObstacles + 1);
             }
         }
     }
@@ -2230,15 +2231,15 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
     {
         if (agglomeration_info.Cell3Ds_mark[c] == 1)
         {
-            const std::vector<unsigned int> vertices = mesh.Cell3DVertices(c);
+            const std::vector<unsigned int> vertices = full_mesh.Cell3DVertices(c);
 
             for (unsigned int v : vertices)
             {
-                if (!mesh.Cell0DIsActive(v))
+                if (!full_mesh.Cell0DIsActive(v))
                     continue;
 
                 unsigned int count = 0;
-                const std::vector<unsigned int> neighbours = mesh.Cell0DNeighbourCell3Ds(v);
+                const std::vector<unsigned int> neighbours = full_mesh.Cell0DNeighbourCell3Ds(v);
 
                 for (unsigned int n : neighbours)
                     if (agglomeration_info.Cell3Ds_mark[n] == 1)
@@ -2247,7 +2248,7 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                     }
 
                 if (count == neighbours.size())
-                    mesh.Cell0DSetState(v, false);
+                    full_mesh.Cell0DSetState(v, false);
                 else
                 {
                     for (unsigned int n : neighbours)
@@ -2256,21 +2257,19 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                             tempNearObstacleIds.push_back(n);
                         }
 
-                    mesh.Cell0DSetMarker(v, markerObstacles + 1);
+                    full_mesh.Cell0DSetMarker(v, markerObstacles + 1);
                 }
             }
         }
     }
 
-    // const auto filter_active_mesh = meshUtilities.FilterActiveMesh(mesh_3D);
-    // const auto extract_mesh_data = meshUtilities.ExtractMesh3D(filter_active_mesh.Cell0Ds,
-    //                                                            filter_active_mesh.Cell1Ds,
-    //                                                            filter_active_mesh.Cell2Ds,
-    //                                                            filter_active_mesh.Cell3Ds,
-    //                                                            mesh_3D,
-    //                                                            mesh);
-    Gedim::MeshUtilities::ExtractActiveMeshData extractionData;
-    Gedim::MeshUtilities::ExtractActiveMesh(mesh, extractionData);
+    const auto filter_active_mesh = Gedim::MeshUtilities::FilterActiveMesh(full_mesh);
+    const auto extract_mesh_data = Gedim::MeshUtilities::ExtractMesh3D(filter_active_mesh.Cell0Ds,
+                                                                       filter_active_mesh.Cell1Ds,
+                                                                       filter_active_mesh.Cell2Ds,
+                                                                       filter_active_mesh.Cell3Ds,
+                                                                       full_mesh,
+                                                                       mesh);
 }
 // ***************************************************************************
 } // namespace MeshUtilities
