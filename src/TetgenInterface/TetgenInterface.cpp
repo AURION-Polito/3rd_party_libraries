@@ -92,7 +92,7 @@ void TetgenInterface::CreateMesh(const Eigen::MatrixXd &points,
     tetgenio *tetgenInput = new tetgenio();
     tetgenio *tetgenOutput = new tetgenio();
 
-    CreateTetgenInput(points, facets, {}, *tetgenInput);
+    CreateTetgenInput(points, facets, {}, {}, *tetgenInput);
     CreateTetgenOutput(maxTetrahedronVolume, *tetgenInput, *tetgenOutput, tetgenOptions);
 
     ConvertTetgenOutputToMeshDAO(*tetgenOutput, mesh);
@@ -119,7 +119,36 @@ void TetgenInterface::CreateMesh(const Eigen::MatrixXd &points,
     tetgenio *tetgenInput = new tetgenio();
     tetgenio *tetgenOutput = new tetgenio();
 
-    CreateTetgenInput(points, facets, regions, *tetgenInput);
+    CreateTetgenInput(points, facets, regions, {}, *tetgenInput);
+    CreateTetgenOutput(0.0, *tetgenInput, *tetgenOutput, tetgenOptions);
+
+    ConvertTetgenOutputToMeshDAO(*tetgenOutput, mesh);
+
+    DeleteTetgenStructure(*tetgenInput, *tetgenOutput);
+    delete tetgenInput;
+    delete tetgenOutput;
+#endif
+}
+// ***************************************************************************
+void TetgenInterface::CreateMesh(const Eigen::MatrixXd &points,
+                                 const std::vector<std::vector<unsigned int>> &facets,
+                                 const std::vector<TetgenInterface::Region> &regions,
+                                 const std::vector<Eigen::Vector3d> &holes,
+                                 IMeshDAO &mesh,
+                                 const std::string &tetgenOptions) const
+{
+    Gedim::Utilities::Unused(points);
+    Gedim::Utilities::Unused(facets);
+    Gedim::Utilities::Unused(regions);
+    Gedim::Utilities::Unused(mesh);
+    Gedim::Utilities::Unused(holes);
+    Gedim::Utilities::Unused(tetgenOptions);
+
+#if ENABLE_TETGEN == 1
+    tetgenio *tetgenInput = new tetgenio();
+    tetgenio *tetgenOutput = new tetgenio();
+
+    CreateTetgenInput(points, facets, regions, holes, *tetgenInput);
     CreateTetgenOutput(0.0, *tetgenInput, *tetgenOutput, tetgenOptions);
 
     ConvertTetgenOutputToMeshDAO(*tetgenOutput, mesh);
@@ -157,6 +186,12 @@ void TetgenInterface::DeleteTetgenStructure(tetgenio &tetgenInput, tetgenio &) c
 
     delete[] tetgenInput.facetlist;
     tetgenInput.facetlist = NULL;
+
+    delete[] tetgenInput.regionlist;
+    tetgenInput.regionlist = NULL;
+
+    delete[] tetgenInput.holelist;
+    tetgenInput.holelist = NULL;
 }
 // ***************************************************************************
 void TetgenInterface::CreateTetgenInput(const Eigen::MatrixXd &polyhedronVertices,
@@ -294,6 +329,7 @@ void TetgenInterface::CreateTetgenInput(const Eigen::MatrixXd &polyhedronVertice
 void TetgenInterface::CreateTetgenInput(const Eigen::MatrixXd &points,
                                         const std::vector<std::vector<unsigned int>> &facets,
                                         const std::vector<TetgenInterface::Region> &regions,
+                                        const std::vector<Eigen::Vector3d> &holes,
                                         tetgenio &tetgenInput) const
 {
     const unsigned int num_points = points.cols();
@@ -370,6 +406,21 @@ void TetgenInterface::CreateTetgenInput(const Eigen::MatrixXd &points,
             tetgenInput.regionlist[2 + 5 * r] = region.centroid.z();
             tetgenInput.regionlist[3 + 5 * r] = region.id;
             tetgenInput.regionlist[4 + 5 * r] = region.max_volume;
+        }
+    }
+
+    if (holes.size() > 0)
+    {
+        // Punto interno al cubo da rimuovere
+        const unsigned int num_holes = holes.size();
+        tetgenInput.numberofholes = num_holes;
+        tetgenInput.holelist = new REAL[3 * num_holes];
+
+        for (unsigned int r = 0; r < num_holes; ++r)
+        {
+            tetgenInput.holelist[0] = holes[r](0);
+            tetgenInput.holelist[1] = holes[r](1);
+            tetgenInput.holelist[2] = holes[r](2);
         }
     }
 }
