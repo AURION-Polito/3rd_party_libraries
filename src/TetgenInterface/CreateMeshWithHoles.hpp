@@ -9,6 +9,9 @@
 //
 // This file can be used citing references in CITATION.cff file.
 
+#ifndef __CreateMeshWithHoles_hpp_
+#define __CreateMeshWithHoles_hpp_
+
 #include "GeometryUtilities.hpp"
 #include "GraphUtilities.hpp"
 #include "IMeshDAO.hpp"
@@ -120,7 +123,7 @@ AgglomerateMeshByFunctionResult AgglomerateMeshByFunction(const Gedim::GeometryU
                                                           Gedim::MeshMatrices &mesh_data,
                                                           const std::function<Eigen::VectorXi(const Eigen::MatrixXd &)> &marking_function,
                                                           const double &resolution,
-                                                          const std::vector<Eigen::MatrixXd> &cell3Ds_constrained_points);
+                                                          const std::vector<Eigen::MatrixXd> &cell3Ds_constrained_points = {});
 
 void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                          const std::vector<Gedim::GeometryUtilities::Polyhedron> &domains,
@@ -131,3 +134,5 @@ void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
 } // namespace MeshUtilities
 } // namespace External
 } // namespace Gedim
+
+#endif
