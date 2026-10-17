@@ -89,7 +89,7 @@ class TetgenInterface final
                     const std::vector<std::vector<unsigned int>> &facets,
                     const std::vector<TetgenInterface::Region> &regions,
                     const std::vector<Eigen::Vector3d> &holes,
-                    IMeshDAO &mesh,
+                    Gedim::IMeshDAO &mesh,
                     const std::string &tetgenOptions = "QpqfeznaA") const;
 };
 
