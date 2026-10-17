@@ -71,11 +71,11 @@ class MetisUtilities final
             METIS_DBG_MEMORY = 2048     /*!< Show info related to wspace allocation */
         };
 
-        PartitionTypes PartitionType = PartitionTypes::Unknown;
-        CoarseningSchemes CoarseningSchema = CoarseningSchemes::Default;
-        RefinementSchemes RefinementSchema = RefinementSchemes::Default;
-        InitialPartitioningSchemes InitialPartitioningSchema = InitialPartitioningSchemes::Default;
-        DebugLevels DebugLevel = DebugLevels::None;
+        Gedim::MetisUtilities::NetworkPartitionOptions::PartitionTypes PartitionType = Gedim::MetisUtilities::NetworkPartitionOptions::PartitionTypes::Unknown;
+        Gedim::MetisUtilities::NetworkPartitionOptions::CoarseningSchemes CoarseningSchema = Gedim::MetisUtilities::NetworkPartitionOptions::CoarseningSchemes::Default;
+        Gedim::MetisUtilities::NetworkPartitionOptions::RefinementSchemes RefinementSchema = Gedim::MetisUtilities::NetworkPartitionOptions::RefinementSchemes::Default;
+        Gedim::MetisUtilities::NetworkPartitionOptions::InitialPartitioningSchemes InitialPartitioningSchema = Gedim::MetisUtilities::NetworkPartitionOptions::InitialPartitioningSchemes::Default;
+        Gedim::MetisUtilities::NetworkPartitionOptions::DebugLevels DebugLevel = Gedim::MetisUtilities::NetworkPartitionOptions::DebugLevels::None;
         unsigned int NumberOfParts = 0;
         unsigned int NumberRefinementIterations = 10;
         bool ContigousPartitions = true;
@@ -93,7 +93,7 @@ class MetisUtilities final
             std::vector<unsigned int> Cols;
         };
 
-        MetisAdjacency Adjacency;
+        Gedim::MetisUtilities::MetisNetwork::MetisAdjacency Adjacency;
         std::vector<bool> EdgesConstrained;
         std::vector<unsigned int> NodesWeight = {};
         std::vector<unsigned int> EdgesWeight = {};
@@ -102,36 +102,36 @@ class MetisUtilities final
     struct MeshToNetwork final
     {
         std::vector<unsigned int> EdgesMeshCellIndex;
-        MetisNetwork Network;
+        Gedim::MetisUtilities::MetisNetwork Network;
     };
 
   public:
     MetisUtilities();
     ~MetisUtilities();
 
-    MetisUtilities::MeshToNetwork Mesh3DToDualGraph(
+    Gedim::MetisUtilities::MeshToNetwork Mesh3DToDualGraph(
         const IMeshDAO &mesh,
         const std::vector<unsigned int> &cell3DsWeight = {},
         const std::vector<bool> &cell2DsConstrained = {},
         const Eigen::SparseMatrix<unsigned int> &networkEdgesWeight = Eigen::SparseMatrix<unsigned int>()) const;
-    MetisUtilities::MeshToNetwork Mesh2DToDualGraph(
+    Gedim::MetisUtilities::MeshToNetwork Mesh2DToDualGraph(
         const IMeshDAO &mesh,
         const std::vector<unsigned int> &cell2DsWeight = {},
         const std::vector<bool> &cell1DsConstrained = {},
         const Eigen::SparseMatrix<unsigned int> &networkEdgesWeight = Eigen::SparseMatrix<unsigned int>()) const;
-    MetisUtilities::MetisNetwork MeshToGraph(const unsigned int &numVertices,
+    Gedim::MetisUtilities::MetisNetwork MeshToGraph(const unsigned int &numVertices,
                                              const Eigen::MatrixXi &edges,
                                              const bool &undirectEdges,
                                              const std::vector<unsigned int> &verticesWeight = {},
                                              const std::vector<unsigned int> &edgesWeight = {}) const;
 
-    MetisNetwork::MetisAdjacency GraphAdjacencyToMetisAdjacency(const std::vector<std::vector<unsigned int>> &graphAdjacency) const;
-    std::vector<std::vector<unsigned int>> MetisAdjacencyToGraphAdjacency(const MetisNetwork::MetisAdjacency &metisAdjacency) const;
+    Gedim::MetisUtilities::MetisNetwork::MetisAdjacency GraphAdjacencyToMetisAdjacency(const std::vector<std::vector<unsigned int>> &graphAdjacency) const;
+    std::vector<std::vector<unsigned int>> MetisAdjacencyToGraphAdjacency(const Gedim::MetisUtilities::MetisNetwork::MetisAdjacency &metisAdjacency) const;
 
-    std::vector<unsigned int> NetworkPartition(const NetworkPartitionOptions &options, const MetisNetwork &network) const;
+    std::vector<unsigned int> NetworkPartition(const Gedim::MetisUtilities::NetworkPartitionOptions &options, const Gedim::MetisUtilities::MetisNetwork &network) const;
 
-    std::vector<unsigned int> PartitionCheckConstraints(const MetisNetwork &network, const std::vector<unsigned int> &partitions) const;
-    std::vector<unsigned int> PartitionCheckConnectedComponents(const MetisNetwork &network,
+    std::vector<unsigned int> PartitionCheckConstraints(const Gedim::MetisUtilities::MetisNetwork &network, const std::vector<unsigned int> &partitions) const;
+    std::vector<unsigned int> PartitionCheckConnectedComponents(const Gedim::MetisUtilities::MetisNetwork &network,
                                                                 const std::vector<unsigned int> &partitions) const;
 };
 } // namespace Gedim
