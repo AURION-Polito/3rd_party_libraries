@@ -11,7 +11,7 @@ message(STATUS "Install triangle release 1.0.4")
 if(WIN32)
 ExternalProject_Add(triangle
     GIT_REPOSITORY git@github.com:gioanateora/triangle.git
-    GIT_TAG 85416cec93934de2d17a7b676675a342e6ed843d # release 1.0.4
+    GIT_TAG a75bd94d4a193819e0992a67b6eb46e881ed88f4 # release 1.0.5
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
     SOURCE_DIR ${TRIANGLE_SOURCE_DIR}
