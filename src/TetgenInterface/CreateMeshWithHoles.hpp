@@ -9,17 +9,14 @@
 //
 // This file can be used citing references in CITATION.cff file.
 
-#ifndef __CreateMeshWithHoles_hpp_
-#define __CreateMeshWithHoles_hpp_
+#ifndef __CreateMeshWithHoles_H
+#define __CreateMeshWithHoles_H
 
 #include "GeometryUtilities.hpp"
 #include "GraphUtilities.hpp"
 #include "IMeshDAO.hpp"
 
 // #define EXPORT_TEST_VTU
-
-using namespace std;
-using namespace Eigen;
 
 namespace Gedim
 {
@@ -77,14 +74,14 @@ struct SplitPolyhedronByFunctionResult final
         unsigned int Mark;
     };
 
-    Types Type;
+    Gedim::External::MeshUtilities::SplitPolyhedronByFunctionResult::Types Type;
     std::vector<unsigned int> Original_vertex_to_split_vertex;
     std::vector<std::vector<unsigned int>> Original_edge_to_split_edges;
     std::vector<std::vector<unsigned int>> Original_face_to_split_faces;
-    std::vector<Vertex> Split_vertices;
-    std::vector<Edge> Split_edges;
-    std::vector<Face> Split_faces;
-    std::vector<Polyhedron> Split_polyhedrons;
+    std::vector<Gedim::External::MeshUtilities::SplitPolyhedronByFunctionResult::Vertex> Split_vertices;
+    std::vector<Gedim::External::MeshUtilities::SplitPolyhedronByFunctionResult::Edge> Split_edges;
+    std::vector<Gedim::External::MeshUtilities::SplitPolyhedronByFunctionResult::Face> Split_faces;
+    std::vector<Gedim::External::MeshUtilities::SplitPolyhedronByFunctionResult::Polyhedron> Split_polyhedrons;
 };
 
 Eigen::MatrixXd FilterConstrainedPoints(const Gedim::GeometryUtilities &geometryUtilities,
@@ -107,32 +104,34 @@ bool AgglomerateMeshCellByFunction(const Gedim::GeometryUtilities &geometryUtili
                                    const std::function<Eigen::VectorXi(const Eigen::MatrixXd &)> &marking_function,
                                    const double &resolution);
 
-SplitPolyhedronByFunctionResult SplitPolyhedronByFunction(const Gedim::GeometryUtilities &geometryUtilities,
-                                                          const Gedim::GraphUtilities &graphUtilities,
-                                                          const Eigen::MatrixXd &polyhedron_vertices,
-                                                          const Eigen::MatrixXi &polyhedron_edges,
-                                                          const std::vector<Eigen::MatrixXi> &polyhedron_faces,
-                                                          const Eigen::MatrixXd &polyhedron_additional_constrained_points,
-                                                          const double &polyhedron_volume,
-                                                          const std::function<Eigen::VectorXi(const Eigen::MatrixXd &)> &marking_function,
-                                                          const double &resolution,
-                                                          const unsigned int polyhedron_index);
+Gedim::External::MeshUtilities::SplitPolyhedronByFunctionResult SplitPolyhedronByFunction(
+    const Gedim::GeometryUtilities &geometryUtilities,
+    const Gedim::GraphUtilities &graphUtilities,
+    const Eigen::MatrixXd &polyhedron_vertices,
+    const Eigen::MatrixXi &polyhedron_edges,
+    const std::vector<Eigen::MatrixXi> &polyhedron_faces,
+    const Eigen::MatrixXd &polyhedron_additional_constrained_points,
+    const double &polyhedron_volume,
+    const std::function<Eigen::VectorXi(const Eigen::MatrixXd &)> &marking_function,
+    const double &resolution,
+    const unsigned int polyhedron_index);
 
-AgglomerateMeshByFunctionResult AgglomerateMeshByFunction(const Gedim::GeometryUtilities &geometryUtilities,
-                                                          const Gedim::GraphUtilities &graphUtilities,
-                                                          Gedim::MeshMatrices &mesh_data,
-                                                          const std::function<Eigen::VectorXi(const Eigen::MatrixXd &)> &marking_function,
-                                                          const double &resolution,
-                                                          const std::vector<Eigen::MatrixXd> &cell3Ds_constrained_points = {});
+Gedim::External::MeshUtilities::AgglomerateMeshByFunctionResult AgglomerateMeshByFunction(
+    const Gedim::GeometryUtilities &geometryUtilities,
+    const Gedim::GraphUtilities &graphUtilities,
+    Gedim::MeshMatrices &mesh_data,
+    const std::function<Eigen::VectorXi(const Eigen::MatrixXd &)> &marking_function,
+    const double &resolution,
+    const std::vector<Eigen::MatrixXd> &cell3Ds_constrained_points = {});
 
 void CreateMeshWithHoles(const Gedim::GeometryUtilities &geometry_utilities,
                          const std::vector<Gedim::GeometryUtilities::Polyhedron> &domains,
                          Gedim::MeshMatrices &full_mesh_data,
                          Gedim::IMeshDAO &full_mesh,
-                         IMeshDAO &mesh);
+                         Gedim::IMeshDAO &mesh);
 
 } // namespace MeshUtilities
 } // namespace External
 } // namespace Gedim
 
-#endif
+#endif // __CreateMeshWithHoles_H
